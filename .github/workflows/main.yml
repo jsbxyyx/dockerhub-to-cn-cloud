@@ -18,7 +18,7 @@ on:
         default: 'nacos/nacos-server:v2.4.3'
 
 jobs:
-  build:
+  pull:
     runs-on: ubuntu-22.04
     permissions:
       contents: write
