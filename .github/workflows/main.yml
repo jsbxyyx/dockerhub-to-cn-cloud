@@ -1,0 +1,47 @@
+name: Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: true
+        default: 'info'
+        type: choice
+        options:
+        - info
+        - warning
+        - debug
+      image:
+        description: '镜像名称'
+        required: true
+        default: 'nacos/nacos-server:v2.4.3'
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Run Docker commands
+        env:
+          XX: ''
+          IMAGE_NAME: ${{ github.event.inputs.image }}
+          DOCKER_URL: ${{ secrets.DOCKER_URL }}
+          DOCKER_USER: ${{ secrets.DOCKER_USER }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          DOCKER_NAMESPACE: ${{ secrets.DOCKER_NAMESPACE }}
+        run: |
+          echo ${DOCKER_PASSWORD} | docker login --username ${DOCKER_USER} --password-stdin ${DOCKER_URL} 
+          FINAL_IMAGE_NAME=$( echo ${IMAGE_NAME} | sed 's/\//_/g'  )
+          echo "image name : ${FINAL_IMAGE_NAME}"
+          docker pull ${IMAGE_NAME}
+          docker tag ${IMAGE_NAME} ${DOCKER_URL}/${DOCKER_NAMESPACE}/${FINAL_IMAGE_NAME}
+          docker push ${DOCKER_URL}/${DOCKER_NAMESPACE}/${FINAL_IMAGE_NAME}
+          docker logout ${DOCKER_URL}
