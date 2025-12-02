@@ -38,10 +38,14 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
           DOCKER_NAMESPACE: ${{ secrets.DOCKER_NAMESPACE }}
         run: |
-          echo ${DOCKER_PASSWORD} | docker login --username ${DOCKER_USER} --password-stdin ${DOCKER_URL} 
+          echo ${DOCKER_PASSWORD} | docker login ${DOCKER_URL} --username ${DOCKER_USER} --password-stdin
           FINAL_IMAGE_NAME=$( echo ${IMAGE_NAME} | sed 's/\//_/g'  )
-          echo "image name : ${FINAL_IMAGE_NAME}"
+          echo "FINAL_IMAGE_NAME=${FINAL_IMAGE_NAME}"
+          echo "docker pull ${IMAGE_NAME}"
           docker pull ${IMAGE_NAME}
+          echo "docker tag ${IMAGE_NAME} ${DOCKER_URL}/${DOCKER_NAMESPACE}/${FINAL_IMAGE_NAME}"
           docker tag ${IMAGE_NAME} ${DOCKER_URL}/${DOCKER_NAMESPACE}/${FINAL_IMAGE_NAME}
+          echo "docker push ${DOCKER_URL}/${DOCKER_NAMESPACE}/${FINAL_IMAGE_NAME}"
           docker push ${DOCKER_URL}/${DOCKER_NAMESPACE}/${FINAL_IMAGE_NAME}
+          echo "docker logout ${DOCKER_URL}"
           docker logout ${DOCKER_URL}
